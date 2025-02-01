@@ -5,8 +5,8 @@ Gravigo is a Go program for simulating the orbit of N objects under their mutual
 ## Development Roadmap
 
 - [x] Port the previous C++ implementation to Go with additional project structure improvement.
-- [] Migrate the Python matplotlib visualization to [Gonum Plot](https://github.com/gonum/plot) for native experiences.
-- [] Add concurrency support with goroutines in Runge-Kutta numerical integration for faster processing.
+- [ ] Migrate the Python matplotlib visualization to [Gonum Plot](https://github.com/gonum/plot) for native experiences.
+- [ ] Add concurrency support with goroutines in Runge-Kutta numerical integration for faster processing.
 
 ## Getting Started
 

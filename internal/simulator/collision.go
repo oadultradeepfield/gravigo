@@ -1,38 +1,66 @@
 package simulator
 
 import (
-	"log"
+	"runtime"
 	"sync"
 )
 
+type CollisionPair struct {
+	b1, b2 *Body
+}
+
 func HandleCollisions(bodies []*Body) error {
+	numWorkers := runtime.NumCPU()
+	totalPairs := (len(bodies) * (len(bodies) - 1)) / 2
+	pairsPerWorker := totalPairs / numWorkers
 	var wg sync.WaitGroup
-	var mu sync.Mutex
+	CollisionPairs := make([][]CollisionPair, numWorkers)
 
-	for i := 0; i < len(bodies); i++ {
-		b1 := bodies[i]
-
+	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
-		go func(i int, b1 *Body) {
+		go func(workerID int) {
 			defer wg.Done()
 
-			for j := i + 1; j < len(bodies); j++ {
-				b2 := bodies[j]
+			pairStart := workerID * pairsPerWorker
+			pairEnd := pairStart + pairsPerWorker
+			if workerID == numWorkers-1 {
+				pairEnd = totalPairs
+			}
 
-				_, _, _, distance, err := b1.Position.DistanceTo(b2.Position)
-				if err != nil {
-					log.Fatalf("error handling collision: %v", err)
-					return
-				}
+			pairCount := 0
+			for i := 0; i < len(bodies); i++ {
+				for j := i + 1; j < len(bodies); j++ {
+					if pairCount < pairStart {
+						pairCount++
+						continue
+					}
+					if pairCount >= pairEnd {
+						break
+					}
 
-				if distance < CollisionThreshold {
-					mu.Lock()
-					handleCollisionPair(b1, b2)
-					mu.Unlock()
+					_, _, _, distance, err := bodies[i].Position.DistanceTo(bodies[j].Position)
+					if err != nil {
+						continue
+					}
+
+					if distance < CollisionThreshold {
+						CollisionPairs[workerID] = append(CollisionPairs[workerID],
+							CollisionPair{b1: bodies[i], b2: bodies[j]})
+					}
+					pairCount++
 				}
 			}
-		}(i, b1)
+		}(w)
 	}
+
+	wg.Wait()
+
+	for _, workerPairs := range CollisionPairs {
+		for _, pair := range workerPairs {
+			handleCollisionPair(pair.b1, pair.b2)
+		}
+	}
+
 	return nil
 }
 

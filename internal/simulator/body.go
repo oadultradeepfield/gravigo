@@ -2,7 +2,7 @@ package simulator
 
 import (
 	"errors"
-	"log"
+	"runtime"
 	"sync"
 )
 
@@ -38,35 +38,47 @@ func (b *Body) UpdateAcceleration(bodies []*Body, gravitationalConstant float64)
 		return errors.New("gravitational constant must be a positive value")
 	}
 
+	numWorkers := runtime.NumCPU()
+	bodiesPerWorker := len(bodies) / numWorkers
+	results := make([]Vector, numWorkers)
 	var wg sync.WaitGroup
-	var mu sync.Mutex
 
-	for _, other := range bodies {
-		if other == b {
-			continue
-		}
-
+	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
-		go func(other *Body) {
+		go func(workerID int) {
 			defer wg.Done()
 
-			dx, dy, dz, radialDistance, err := b.Position.DistanceTo(other.Position)
-			if err != nil {
-				log.Fatalf("error updating acceleration: %v", err)
-				return
+			start := workerID * bodiesPerWorker
+			end := start + bodiesPerWorker
+			if workerID == numWorkers-1 {
+				end = len(bodies)
 			}
 
-			softenedDistanceSquared := radialDistance*radialDistance + GravitationalSoftening*GravitationalSoftening
-			accelerationMagnitude := gravitationalConstant * other.Mass / softenedDistanceSquared
-
-			mu.Lock()
-			b.Acceleration.E1 += accelerationMagnitude * dx / radialDistance
-			b.Acceleration.E2 += accelerationMagnitude * dy / radialDistance
-			b.Acceleration.E3 += accelerationMagnitude * dz / radialDistance
-			mu.Unlock()
-		}(other)
+			for j := start; j < end; j++ {
+				other := bodies[j]
+				if other == b {
+					continue
+				}
+				dx, dy, dz, radialDistance, err := b.Position.DistanceTo(other.Position)
+				if err != nil {
+					continue
+				}
+				softenedDistanceSquared := radialDistance*radialDistance + GravitationalSoftening*GravitationalSoftening
+				accelerationMagnitude := gravitationalConstant * other.Mass / softenedDistanceSquared
+				results[workerID].E1 += accelerationMagnitude * dx / radialDistance
+				results[workerID].E2 += accelerationMagnitude * dy / radialDistance
+				results[workerID].E3 += accelerationMagnitude * dz / radialDistance
+			}
+		}(i)
 	}
 
 	wg.Wait()
+
+	for _, result := range results {
+		b.Acceleration.E1 += result.E1
+		b.Acceleration.E2 += result.E2
+		b.Acceleration.E3 += result.E3
+	}
+
 	return nil
 }

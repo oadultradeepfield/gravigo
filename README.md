@@ -5,7 +5,7 @@ Gravigo is a Go program for simulating the orbit of N objects under their mutual
 ## Development Roadmap
 
 - [x] Port the previous C++ implementation to Go with additional project structure improvement.
-- [ ] Parallelize the loop with goroutines to make the iterations run concurrently.
+- [x] Parallelize the loop with goroutines to make the iterations run concurrently.
 - [ ] Migrate the Python matplotlib visualization to [Gonum Plot](https://github.com/gonum/plot) for native experiences.
 
 ## Getting Started
@@ -114,7 +114,30 @@ Gravigo is a Go program for simulating the orbit of N objects under their mutual
 
     Each line corresponds to the Cartesian coordinates of each object in the same order as the input. There are seven objects in the above example, so the line will repeat for the same objects every seven lines at the new time step.
 
-3.  To be updated after integrating Gonum Plot.
+3.  (Optional) To test the performance of your machine when simulating a large number of objects, you can run the following command:
+
+    ```bash
+    go run cmd/benchmark/main.go
+    ```
+
+    On my machine (M3 Macbook Air with 8-Core CPU), the following results were logged to the console:
+
+    ```
+    2025/02/01 18:37:11 Starting benchmark...
+    2025/02/01 18:37:11 Simulating 10 bodies...
+    2025/02/01 18:37:11 N=10: Time taken: 120ms
+    2025/02/01 18:37:11 Simulating 50 bodies...
+    2025/02/01 18:37:11 N=50: Time taken: 302ms
+    2025/02/01 18:37:11 Simulating 250 bodies...
+    2025/02/01 18:37:13 N=250: Time taken: 1.507s
+    2025/02/01 18:37:13 Simulating 1250 bodies...
+    2025/02/01 18:37:26 N=1250: Time taken: 12.907s
+    2025/02/01 18:37:26 Simulating 6250 bodies...
+    2025/02/01 18:40:51 N=6250: Time taken: 3m25.483s
+    2025/02/01 18:40:51 Benchmark completed.
+    ```
+
+4.  To be updated after integrating Gonum Plot.
 
 ## License
 

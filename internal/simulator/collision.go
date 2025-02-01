@@ -1,23 +1,37 @@
 package simulator
 
-import "fmt"
+import (
+	"log"
+	"sync"
+)
 
 func HandleCollisions(bodies []*Body) error {
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	for i := 0; i < len(bodies); i++ {
 		b1 := bodies[i]
 
-		for j := i + 1; j < len(bodies); j++ {
-			b2 := bodies[j]
+		wg.Add(1)
+		go func(i int, b1 *Body) {
+			defer wg.Done()
 
-			_, _, _, distance, err := b1.Position.DistanceTo(b2.Position)
-			if err != nil {
-				return fmt.Errorf("error handling collision: %v", err)
-			}
+			for j := i + 1; j < len(bodies); j++ {
+				b2 := bodies[j]
 
-			if distance < CollisionThreshold {
-				handleCollisionPair(b1, b2)
+				_, _, _, distance, err := b1.Position.DistanceTo(b2.Position)
+				if err != nil {
+					log.Fatalf("error handling collision: %v", err)
+					return
+				}
+
+				if distance < CollisionThreshold {
+					mu.Lock()
+					handleCollisionPair(b1, b2)
+					mu.Unlock()
+				}
 			}
-		}
+		}(i, b1)
 	}
 	return nil
 }

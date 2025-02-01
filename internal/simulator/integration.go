@@ -1,5 +1,7 @@
 package simulator
 
+import "sync"
+
 func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 	n := len(bodies)
 
@@ -22,66 +24,108 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 		return tmp
 	}
 
+	var wg sync.WaitGroup
+
+	wg.Add(n)
 	for i, b := range bodies {
-		k1Pos[i] = b.Velocity
-		b.UpdateAcceleration(bodies, gravitationalConstant)
-		k1Vel[i] = b.Acceleration
+		go func(i int, b *Body) {
+			defer wg.Done()
+			k1Pos[i] = b.Velocity
+			b.UpdateAcceleration(bodies, gravitationalConstant)
+			k1Vel[i] = b.Acceleration
+		}(i, b)
 	}
+	wg.Wait()
 
 	tmp := copyBodies()
+	wg.Add(n)
 	for i := range tmp {
-		tmp[i].Position.E1 += 0.5 * dt * k1Pos[i].E1
-		tmp[i].Position.E2 += 0.5 * dt * k1Pos[i].E2
-		tmp[i].Position.E3 += 0.5 * dt * k1Pos[i].E3
-		tmp[i].Velocity.E1 += 0.5 * dt * k1Vel[i].E1
-		tmp[i].Velocity.E2 += 0.5 * dt * k1Vel[i].E2
-		tmp[i].Velocity.E3 += 0.5 * dt * k1Vel[i].E3
+		go func(i int) {
+			defer wg.Done()
+			tmp[i].Position.E1 += 0.5 * dt * k1Pos[i].E1
+			tmp[i].Position.E2 += 0.5 * dt * k1Pos[i].E2
+			tmp[i].Position.E3 += 0.5 * dt * k1Pos[i].E3
+			tmp[i].Velocity.E1 += 0.5 * dt * k1Vel[i].E1
+			tmp[i].Velocity.E2 += 0.5 * dt * k1Vel[i].E2
+			tmp[i].Velocity.E3 += 0.5 * dt * k1Vel[i].E3
+		}(i)
 	}
+	wg.Wait()
 
+	wg.Add(n)
 	for i, b := range tmp {
-		k2Pos[i] = b.Velocity
-		b.UpdateAcceleration(tmp, gravitationalConstant)
-		k2Vel[i] = b.Acceleration
+		go func(i int, b *Body) {
+			defer wg.Done()
+			k2Pos[i] = b.Velocity
+			b.UpdateAcceleration(tmp, gravitationalConstant)
+			k2Vel[i] = b.Acceleration
+		}(i, b)
 	}
+	wg.Wait()
 
 	tmp = copyBodies()
+	wg.Add(n)
 	for i := range tmp {
-		tmp[i].Position.E1 += 0.5 * dt * k2Pos[i].E1
-		tmp[i].Position.E2 += 0.5 * dt * k2Pos[i].E2
-		tmp[i].Position.E3 += 0.5 * dt * k2Pos[i].E3
-		tmp[i].Velocity.E1 += 0.5 * dt * k2Vel[i].E1
-		tmp[i].Velocity.E2 += 0.5 * dt * k2Vel[i].E2
-		tmp[i].Velocity.E3 += 0.5 * dt * k2Vel[i].E3
+		go func(i int) {
+			defer wg.Done()
+			tmp[i].Position.E1 += 0.5 * dt * k2Pos[i].E1
+			tmp[i].Position.E2 += 0.5 * dt * k2Pos[i].E2
+			tmp[i].Position.E3 += 0.5 * dt * k2Pos[i].E3
+			tmp[i].Velocity.E1 += 0.5 * dt * k2Vel[i].E1
+			tmp[i].Velocity.E2 += 0.5 * dt * k2Vel[i].E2
+			tmp[i].Velocity.E3 += 0.5 * dt * k2Vel[i].E3
+		}(i)
 	}
+	wg.Wait()
 
+	wg.Add(n)
 	for i, b := range tmp {
-		k3Pos[i] = b.Velocity
-		b.UpdateAcceleration(tmp, gravitationalConstant)
-		k3Vel[i] = b.Acceleration
+		go func(i int, b *Body) {
+			defer wg.Done()
+			k3Pos[i] = b.Velocity
+			b.UpdateAcceleration(tmp, gravitationalConstant)
+			k3Vel[i] = b.Acceleration
+		}(i, b)
 	}
+	wg.Wait()
 
 	tmp = copyBodies()
+	wg.Add(n)
 	for i := range tmp {
-		tmp[i].Position.E1 += dt * k3Pos[i].E1
-		tmp[i].Position.E2 += dt * k3Pos[i].E2
-		tmp[i].Position.E3 += dt * k3Pos[i].E3
-		tmp[i].Velocity.E1 += dt * k3Vel[i].E1
-		tmp[i].Velocity.E2 += dt * k3Vel[i].E2
-		tmp[i].Velocity.E3 += dt * k3Vel[i].E3
+		go func(i int) {
+			defer wg.Done()
+			tmp[i].Position.E1 += dt * k3Pos[i].E1
+			tmp[i].Position.E2 += dt * k3Pos[i].E2
+			tmp[i].Position.E3 += dt * k3Pos[i].E3
+			tmp[i].Velocity.E1 += dt * k3Vel[i].E1
+			tmp[i].Velocity.E2 += dt * k3Vel[i].E2
+			tmp[i].Velocity.E3 += dt * k3Vel[i].E3
+		}(i)
 	}
+	wg.Wait()
 
+	wg.Add(n)
 	for i, b := range tmp {
-		k4Pos[i] = b.Velocity
-		b.UpdateAcceleration(tmp, gravitationalConstant)
-		k4Vel[i] = b.Acceleration
+		go func(i int, b *Body) {
+			defer wg.Done()
+			k4Pos[i] = b.Velocity
+			b.UpdateAcceleration(tmp, gravitationalConstant)
+			k4Vel[i] = b.Acceleration
+		}(i, b)
 	}
+	wg.Wait()
 
+	wg.Add(n)
 	for i, b := range bodies {
-		b.Position.E1 += dt / 6.0 * (k1Pos[i].E1 + 2*k2Pos[i].E1 + 2*k3Pos[i].E1 + k4Pos[i].E1)
-		b.Position.E2 += dt / 6.0 * (k1Pos[i].E2 + 2*k2Pos[i].E2 + 2*k3Pos[i].E2 + k4Pos[i].E2)
-		b.Position.E3 += dt / 6.0 * (k1Pos[i].E3 + 2*k2Pos[i].E3 + 2*k3Pos[i].E3 + k4Pos[i].E3)
-		b.Velocity.E1 += dt / 6.0 * (k1Vel[i].E1 + 2*k2Vel[i].E1 + 2*k3Vel[i].E1 + k4Vel[i].E1)
-		b.Velocity.E2 += dt / 6.0 * (k1Vel[i].E2 + 2*k2Vel[i].E2 + 2*k3Vel[i].E2 + k4Vel[i].E2)
-		b.Velocity.E3 += dt / 6.0 * (k1Vel[i].E3 + 2*k2Vel[i].E3 + 2*k3Vel[i].E3 + k4Vel[i].E3)
+		go func(i int, b *Body) {
+			defer wg.Done()
+			b.Position.E1 += dt / 6.0 * (k1Pos[i].E1 + 2*k2Pos[i].E1 + 2*k3Pos[i].E1 + k4Pos[i].E1)
+			b.Position.E2 += dt / 6.0 * (k1Pos[i].E2 + 2*k2Pos[i].E2 + 2*k3Pos[i].E2 + k4Pos[i].E2)
+			b.Position.E3 += dt / 6.0 * (k1Pos[i].E3 + 2*k2Pos[i].E3 + 2*k3Pos[i].E3 + k4Pos[i].E3)
+			b.Velocity.E1 += dt / 6.0 * (k1Vel[i].E1 + 2*k2Vel[i].E1 + 2*k3Vel[i].E1 + k4Vel[i].E1)
+			b.Velocity.E2 += dt / 6.0 * (k1Vel[i].E2 + 2*k2Vel[i].E2 + 2*k3Vel[i].E2 + k4Vel[i].E2)
+			b.Velocity.E3 += dt / 6.0 * (k1Vel[i].E3 + 2*k2Vel[i].E3 + 2*k3Vel[i].E3 + k4Vel[i].E3)
+		}(i, b)
 	}
+	wg.Wait()
 }

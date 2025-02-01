@@ -2,7 +2,8 @@ package simulator
 
 import (
 	"errors"
-	"fmt"
+	"log"
+	"sync"
 )
 
 const (
@@ -37,22 +38,35 @@ func (b *Body) UpdateAcceleration(bodies []*Body, gravitationalConstant float64)
 		return errors.New("gravitational constant must be a positive value")
 	}
 
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	for _, other := range bodies {
 		if other == b {
 			continue
 		}
 
-		dx, dy, dz, radialDistance, err := b.Position.DistanceTo(other.Position)
-		if err != nil {
-			return fmt.Errorf("error updating acceleration: %v", err)
-		}
+		wg.Add(1)
+		go func(other *Body) {
+			defer wg.Done()
 
-		softenedDistanceSquared := radialDistance*radialDistance + GravitationalSoftening*GravitationalSoftening
-		accelerationMagnitude := gravitationalConstant * other.Mass / softenedDistanceSquared
+			dx, dy, dz, radialDistance, err := b.Position.DistanceTo(other.Position)
+			if err != nil {
+				log.Fatalf("error updating acceleration: %v", err)
+				return
+			}
 
-		b.Acceleration.E1 += accelerationMagnitude * dx / radialDistance
-		b.Acceleration.E2 += accelerationMagnitude * dy / radialDistance
-		b.Acceleration.E3 += accelerationMagnitude * dz / radialDistance
+			softenedDistanceSquared := radialDistance*radialDistance + GravitationalSoftening*GravitationalSoftening
+			accelerationMagnitude := gravitationalConstant * other.Mass / softenedDistanceSquared
+
+			mu.Lock()
+			b.Acceleration.E1 += accelerationMagnitude * dx / radialDistance
+			b.Acceleration.E2 += accelerationMagnitude * dy / radialDistance
+			b.Acceleration.E3 += accelerationMagnitude * dz / radialDistance
+			mu.Unlock()
+		}(other)
 	}
+
+	wg.Wait()
 	return nil
 }

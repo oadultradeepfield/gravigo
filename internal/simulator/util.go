@@ -16,6 +16,7 @@ func RunSimulation(bodies []*Body, dt, totalTime float64, filename string, gravi
 
 	for i := 0; i < steps; i++ {
 		RungeKuttaStep(bodies, dt, gravitationalConstant)
+		HandleCollisions(bodies)
 		printState(bodies, filename)
 	}
 	return nil

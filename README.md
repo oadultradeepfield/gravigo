@@ -1,12 +1,11 @@
 # Gravigo
 
-Gravigo is a Go program for simulating the orbit of N objects under their mutual gravitation. It is a porting of my two continuous previous projects written in C++. Visit [this repository](https://github.com/oadultradeepfield/n-body-orbit-simulation) for more details. Gravigo is meant to be the exact replica but with native support for orbit plotting without relying on Python's Matplotlib. It also supports concurrent simulation using goroutines to allow more efficient processing.
+Gravigo is a Go program for simulating the orbit of N objects under their mutual gravitation. It is a porting of my two continuous previous projects written in C++. Visit [this repository](https://github.com/oadultradeepfield/n-body-orbit-simulation) for more details. Gravigo is meant to be the exact replica but with supports for concurrent simulation using goroutines to allow more efficient processing.
 
 ## Development Roadmap
 
 - [x] Port the previous C++ implementation to Go with additional project structure improvement.
 - [x] Parallelize the loop with goroutines to make the iterations run concurrently.
-- [ ] Migrate the Python matplotlib visualization to [Gonum Plot](https://github.com/gonum/plot) for native experiences.
 
 ## Getting Started
 
@@ -137,7 +136,17 @@ Gravigo is a Go program for simulating the orbit of N objects under their mutual
     2025/02/01 18:40:51 Benchmark completed.
     ```
 
-4.  To be updated after integrating Gonum Plot.
+4.  (Optional) Use the following command line to create a visualization of the trajectory of each object.
+
+    ```bash
+    python3 python/plot.py --filename example_sun_earth_lagrangian_points.txt --N 7 --labels Sun,Earth,L1,L2,L3,L4,L5
+    ```
+
+    The output plot will be saved in the same directory as the input `.txt` file.
+
+    |                               **Example 3D Trajectory**                               |                                **Example XY Projection**                                 |
+    | :-----------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
+    | ![Example 3D Trajectory](/results/example_sun_earth_lagrangian_points_trajectory.png) | ![Example 2D Projection](/results/example_sun_earth_lagrangian_points_2d_projection.png) |
 
 ## License
 

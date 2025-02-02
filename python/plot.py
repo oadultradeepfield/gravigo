@@ -127,8 +127,8 @@ def main():
     else:
         labels = [f"Object {i+1}" for i in range(num_objects)]
 
-    trajectory_plot_path = f"{args.filename}_trajectory.png"
-    projection_plot_path = f"{args.filename}_2d_projection.png"
+    trajectory_plot_path = f"{os.path.splitext(args.filename)[0]}_trajectory.png"
+    projection_plot_path = f"{os.path.splitext(args.filename)[0]}_2d_projection.png"
 
     plot_trajectory(all_positions, labels, trajectory_plot_path, show_labels)
     plot_2d_projection(all_positions, labels, projection_plot_path, show_labels)

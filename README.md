@@ -144,9 +144,9 @@ Gravigo is a Go program for simulating the orbit of N objects under their mutual
 
     The output plot will be saved in the same directory as the input `.txt` file.
 
-    |                               **Example 3D Trajectory**                               |                                **Example XY Projection**                                 |
-    | :-----------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
-    | ![Example 3D Trajectory](/results/example_sun_earth_lagrangian_points_trajectory.png) | ![Example 2D Projection](/results/example_sun_earth_lagrangian_points_2d_projection.png) |
+    |                          **Example 3D Trajectory**                           |                            **Example XY Projection**                            |
+    | :--------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
+    | ![Example 3D Trajectory](example_sun_earth_lagrangian_points_trajectory.png) | ![Example 2D Projection](example_sun_earth_lagrangian_points_2d_projection.png) |
 
 ## License
 

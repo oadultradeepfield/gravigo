@@ -37,6 +37,10 @@ func (v *Vector) DistanceTo(other *Vector) (dx, dy, dz, distance float64, err er
 	return
 }
 
+func (v *Vector) DeepCopy() *Vector {
+	return &Vector{v.E1, v.E2, v.E3, Cartesian}
+}
+
 func ConvertSphericalToCartesian(position, velocity *Vector) error {
 	if position.Type != Spherical || velocity.Type != Spherical {
 		return errors.New("input vectors must be of Spherical coordinate type")
@@ -56,7 +60,7 @@ func ConvertSphericalToCartesian(position, velocity *Vector) error {
 	position.Type = Cartesian
 
 	velocity.E1 = vr*math.Sin(phi)*math.Cos(theta) - vtheta*math.Sin(theta) + vphi*math.Cos(theta)*math.Cos(phi)
-	velocity.E2 = vr*math.Sin(phi)*math.Sin(theta) + vtheta*math.Cos(theta) + vphi*math.Sin(theta)*math.Cos(phi)
+	velocity.E2 = vr*math.Sin(phi)*math.Sin(theta) + vtheta*math.Cos(theta) + vphi*math.Cos(theta)*math.Sin(phi)
 	velocity.E3 = vr*math.Cos(phi) - vphi*math.Sin(phi)
 	velocity.Type = Cartesian
 

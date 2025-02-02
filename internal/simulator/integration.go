@@ -26,7 +26,7 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 	copyBodies := func() []*Body {
 		tmp := make([]*Body, n)
 		for i, b := range bodies {
-			tmp[i], _ = NewBody(b.Mass, b.Position, b.Velocity)
+			tmp[i] = b.DeepCopy()
 		}
 		return tmp
 	}
@@ -50,9 +50,9 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 				end = n
 			}
 			processChunk(start, end, bodies, func(i int, b *Body) {
-				k1Pos[i] = b.Velocity
+				k1Pos[i] = b.Velocity.DeepCopy()
 				b.UpdateAcceleration(bodies, gravitationalConstant)
-				k1Vel[i] = b.Acceleration
+				k1Vel[i] = b.Acceleration.DeepCopy()
 			})
 		}(w)
 	}
@@ -92,9 +92,9 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 				end = n
 			}
 			processChunk(start, end, tmp, func(i int, b *Body) {
-				k2Pos[i] = b.Velocity
+				k2Pos[i] = b.Velocity.DeepCopy()
 				b.UpdateAcceleration(tmp, gravitationalConstant)
-				k2Vel[i] = b.Acceleration
+				k2Vel[i] = b.Acceleration.DeepCopy()
 			})
 		}(w)
 	}
@@ -134,9 +134,9 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 				end = n
 			}
 			processChunk(start, end, tmp, func(i int, b *Body) {
-				k3Pos[i] = b.Velocity
+				k3Pos[i] = b.Velocity.DeepCopy()
 				b.UpdateAcceleration(tmp, gravitationalConstant)
-				k3Vel[i] = b.Acceleration
+				k3Vel[i] = b.Acceleration.DeepCopy()
 			})
 		}(w)
 	}
@@ -176,9 +176,9 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 				end = n
 			}
 			processChunk(start, end, tmp, func(i int, b *Body) {
-				k4Pos[i] = b.Velocity
+				k4Pos[i] = b.Velocity.DeepCopy()
 				b.UpdateAcceleration(tmp, gravitationalConstant)
-				k4Vel[i] = b.Acceleration
+				k4Vel[i] = b.Acceleration.DeepCopy()
 			})
 		}(w)
 	}
@@ -204,4 +204,6 @@ func RungeKuttaStep(bodies []*Body, dt, gravitationalConstant float64) {
 		}(w)
 	}
 	wg.Wait()
+
+	HandleCollisions(bodies)
 }

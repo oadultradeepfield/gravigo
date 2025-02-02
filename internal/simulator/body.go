@@ -33,6 +33,13 @@ func NewBody(mass float64, position, velocity *Vector) (*Body, error) {
 	}, nil
 }
 
+func (b *Body) DeepCopy() *Body {
+	tmpPosition := b.Position.DeepCopy()
+	tmpVelocity := b.Velocity.DeepCopy()
+	tmpAcceleration := b.Acceleration.DeepCopy()
+	return &Body{b.Mass, tmpPosition, tmpVelocity, tmpAcceleration}
+}
+
 func (b *Body) UpdateAcceleration(bodies []*Body, gravitationalConstant float64) error {
 	if gravitationalConstant <= 0 {
 		return errors.New("gravitational constant must be a positive value")
@@ -42,6 +49,8 @@ func (b *Body) UpdateAcceleration(bodies []*Body, gravitationalConstant float64)
 	bodiesPerWorker := len(bodies) / numWorkers
 	results := make([]Vector, numWorkers)
 	var wg sync.WaitGroup
+
+	b.Acceleration = &Vector{Type: Cartesian}
 
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
